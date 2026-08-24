@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AstroCube — Estudio</title>
+<title>AstroCube | Minecraft Content Studios</title>
+<link rel="icon" type="image/png" href="logo-astrocube.png">
 
 <!-- ============================================================
      TIPOGRAFÍAS
@@ -397,6 +398,45 @@ header.site-header{
 }
 
 /* ==========================================================
+   6b. BLOQUE "LO QUE HACEMOS"
+========================================================== */
+.whatwedo-grid{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:var(--gap);
+  margin-top:18px;
+}
+.whatwedo-item{
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:20px;
+  transition:border-color .25s ease;
+}
+.whatwedo-item:hover{ border-color:var(--violet); box-shadow:var(--glow-violet); }
+.whatwedo-title{
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:15.5px;
+  color:var(--text);
+  margin-bottom:8px;
+}
+.whatwedo-item p{
+  font-size:14px;
+  color:var(--text-dim);
+  margin:0;
+}
+.whatwedo-closing{
+  margin-top:22px;
+  font-size:15px;
+  color:var(--text-dim);
+  max-width:820px;
+}
+@media (max-width: 900px){
+  .whatwedo-grid{ grid-template-columns:1fr; }
+}
+
+/* ==========================================================
    7. BLOQUE DIRECTORES (tarjetas dentro de la cuadrícula)
 ========================================================== */
 .director-card{
@@ -404,9 +444,11 @@ header.site-header{
 }
 .director-photo{
   width:100%;
-  aspect-ratio:1/1;
+  aspect-ratio:4/3;
   border-radius:var(--radius-sm);
-  background:var(--surface-2);
+  background:
+    radial-gradient(circle at 50% 30%, rgba(192,77,255,0.14), transparent 60%),
+    var(--surface-2);
   border:1px solid var(--border);
   display:flex; align-items:center; justify-content:center;
   color:var(--text-faint);
@@ -415,7 +457,7 @@ header.site-header{
   text-align:center;
   overflow:hidden;
 }
-.director-photo img{ width:100%; height:100%; object-fit:cover; }
+.director-photo img{ width:auto; height:110%; object-fit:contain; image-rendering:pixelated; filter:drop-shadow(0 6px 10px rgba(0,0,0,.5)); }
 .director-name{ font-family:var(--font-display); font-weight:600; font-size:17px; }
 .director-role{
   font-family:var(--font-mono);
@@ -662,20 +704,37 @@ footer{
         <div class="eyebrow">Quiénes somos</div>
         <h2 class="section-title">Diseñamos experiencias con la precisión de un cubo y la escala de una galaxia.</h2>
         <p>
-          <strong>AstroCube</strong> es un estudio creativo enfocado en producir eventos,
-          contenido y comunidades memorables. Combinamos dirección artística cuidada
-          con procesos claros: cada proyecto se construye pieza por pieza, como las
-          caras de un cubo, hasta formar algo sólido y coherente.
-        </p>
-        <p><!-- Edita este párrafo con el "qué hacemos" real de tu estudio -->
-          Trabajamos en producción de eventos, dirección creativa y gestión de
-          comunidades digitales, siempre con un estándar visual y narrativo alto.
+          <strong>AstroCube | Minecraft Content Studios</strong> es un estudio creativo
+          dedicado al diseño, desarrollo y producción de eventos dinámicos y experiencias
+          únicas dentro de Minecraft. Nos enfocamos en transformar ideas conceptuales en
+          proyectos jugables de alto impacto, combinando mecánicas personalizadas,
+          ambientación detallada y una ejecución técnica fluida para creadores de
+          contenido y comunidades.
         </p>
       </div>
 
       <div class="cell span-4 stat-cell">
-        <div class="num">+12</div>
+        <div class="num">+1</div>
         <div class="label">Eventos realizados</div>
+      </div>
+
+      <div class="cell span-12 whatwedo-cell">
+        <div class="eyebrow">Lo que hacemos</div>
+        <div class="whatwedo-grid">
+          <div class="whatwedo-item">
+            <div class="whatwedo-title">Diseño de Eventos Custom</div>
+            <p>Creación de dinámicas, competencias y modalidades de juego hechas a la medida.</p>
+          </div>
+          <div class="whatwedo-item">
+            <div class="whatwedo-title">Desarrollo y Configuración</div>
+            <p>Integración de plugins, sistemas de juego y optimización de servidores para garantizar estabilidad durante las transmisiones.</p>
+          </div>
+          <div class="whatwedo-item">
+            <div class="whatwedo-title">Gestión Técnica en Vivo</div>
+            <p>Soporte y control de eventos en tiempo real para asegurar una experiencia sin interrupciones.</p>
+          </div>
+        </div>
+        <p class="whatwedo-closing">En AstroCube impulsamos el entretenimiento dentro del juego, llevando cada evento al siguiente nivel con innovación y precisión técnica.</p>
       </div>
     </div>
   </section>
@@ -687,36 +746,24 @@ footer{
     <p class="section-lead">Las personas detrás de cada cara del cubo.</p>
 
     <div class="bento">
-      <!-- Tarjeta de director 1: duplica este bloque .cell.span-3 por cada persona -->
-      <div class="cell span-3 director-card">
-        <div class="director-photo">Foto</div>
+      <!-- Tarjeta de director: duplica este bloque .cell.span-6 por cada persona -->
+      <div class="cell span-6 director-card">
+        <div class="director-photo">
+          <img src="https://mc-heads.net/body/emiliosclis/300" alt="Avatar Minecraft de emiliosclis" loading="lazy">
+        </div>
         <div>
-          <div class="director-name">Nombre Apellido</div>
-          <div class="director-role">Director Creativo</div>
+          <div class="director-name">emiliosclis</div>
+          <div class="director-role">Director</div>
         </div>
       </div>
 
-      <div class="cell span-3 director-card">
-        <div class="director-photo">Foto</div>
-        <div>
-          <div class="director-name">Nombre Apellido</div>
-          <div class="director-role">Director de Producción</div>
+      <div class="cell span-6 director-card">
+        <div class="director-photo">
+          <img src="https://mc-heads.net/body/RODRI/300" alt="Avatar Minecraft de RODRI 2.0" loading="lazy">
         </div>
-      </div>
-
-      <div class="cell span-3 director-card">
-        <div class="director-photo">Foto</div>
         <div>
-          <div class="director-name">Nombre Apellido</div>
-          <div class="director-role">Dirección de Arte</div>
-        </div>
-      </div>
-
-      <div class="cell span-3 director-card">
-        <div class="director-photo">Foto</div>
-        <div>
-          <div class="director-name">Nombre Apellido</div>
-          <div class="director-role">Comunidad y Redes</div>
+          <div class="director-name">RODRI 2.0</div>
+          <div class="director-role">Director</div>
         </div>
       </div>
     </div>
@@ -725,36 +772,18 @@ footer{
   <!-- 5. BLOQUE EVENTOS FUTUROS -->
   <section id="eventos">
     <div class="eyebrow">Agenda</div>
-    <h2 class="section-title">Próximos eventos</h2>
+    <h2 class="section-title">Eventos realizados</h2>
 
     <div class="bento">
       <div class="cell span-12 events-cell">
         <!-- Fila de evento: duplica .event-row para agregar más eventos -->
         <div class="event-row">
-          <div class="event-date">15 SEP 2026</div>
+          <div class="event-date">AstroCube</div>
           <div class="event-info">
-            <div class="name">Lanzamiento AstroCube S2</div>
+            <div class="name">Minecraft Extremo</div>
             <div class="place">Transmisión en vivo · Discord</div>
           </div>
-          <div class="event-tag">Próximo</div>
-        </div>
-
-        <div class="event-row">
-          <div class="event-date">03 OCT 2026</div>
-          <div class="event-info">
-            <div class="name">Evento comunitario abierto</div>
-            <div class="place">Ubicación por confirmar</div>
-          </div>
-          <div class="event-tag">Inscripciones abiertas</div>
-        </div>
-
-        <div class="event-row">
-          <div class="event-date">NOV 2026</div>
-          <div class="event-info">
-            <div class="name">Colaboración especial</div>
-            <div class="place">Detalles muy pronto</div>
-          </div>
-          <div class="event-tag">Por anunciar</div>
+          <div class="event-tag">Realizado</div>
         </div>
       </div>
     </div>

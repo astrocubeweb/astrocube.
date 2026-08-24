@@ -585,6 +585,97 @@ footer{
 }
 
 /* ==========================================================
+   10b. ANIMACIONES AL HACER CLIC (ripple + presión táctil)
+========================================================== */
+.cell,
+.social-link,
+.nav-cta,
+.event-row,
+.gallery-item,
+a.logo{
+  position:relative;
+  overflow:hidden;
+  -webkit-tap-highlight-color:transparent;
+}
+.cell{ --ripple-color:var(--cyan); }
+.director-card{ --ripple-color:var(--violet); }
+.event-row{ --ripple-color:var(--lime); }
+.gallery-item{ --ripple-color:var(--pink); }
+.social-link{ --ripple-color:var(--cyan); }
+.social-link.discord{ --ripple-color:#5865F2; }
+.nav-cta{ --ripple-color:var(--violet); }
+
+.click-ripple{
+  position:absolute;
+  border-radius:50%;
+  transform:scale(0);
+  pointer-events:none;
+  background:radial-gradient(circle, var(--ripple-color) 0%, transparent 70%);
+  opacity:.55;
+  mix-blend-mode:screen;
+  animation:clickRippleAnim .6s ease-out forwards;
+}
+@keyframes clickRippleAnim{
+  from{ transform:scale(0); opacity:.55; }
+  to{ transform:scale(1); opacity:0; }
+}
+
+/* Feedback de "presión" al hacer clic, en cualquier elemento interactivo */
+.cell,
+.social-link,
+.nav-cta,
+.event-row,
+.gallery-item,
+.nav-links a{
+  transition:border-color .25s ease, transform .15s ease, background .2s ease, box-shadow .2s ease;
+}
+.cell:active,
+.social-link:active,
+.nav-cta:active,
+.event-row:active,
+.gallery-item:active{ transform:scale(.96); }
+.nav-links a:active{ transform:scale(.94); display:inline-block; }
+
+.gallery-item{ cursor:pointer; }
+.director-card, .event-row{ cursor:default; }
+
+/* ==========================================================
+   10c. LIGHTBOX DE GALERÍA
+========================================================== */
+.lightbox{
+  position:fixed; inset:0; z-index:1000;
+  background:rgba(5,6,10,.92);
+  backdrop-filter:blur(8px);
+  display:flex; align-items:center; justify-content:center;
+  padding:24px;
+  opacity:0; pointer-events:none;
+  transition:opacity .25s ease;
+}
+.lightbox.open{ opacity:1; pointer-events:auto; }
+.lightbox-inner{
+  background:var(--surface);
+  border:1px solid var(--border-hover);
+  border-radius:var(--radius);
+  padding:30px 38px;
+  font-family:var(--font-mono);
+  font-size:13px;
+  color:var(--text-dim);
+  text-align:center;
+  max-width:min(90vw, 640px);
+  transform:scale(.8) translateY(10px);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:var(--glow-violet);
+}
+.lightbox.open .lightbox-inner{ transform:scale(1) translateY(0); }
+.lightbox-inner img{
+  max-width:100%;
+  max-height:70vh;
+  border-radius:var(--radius-sm);
+  display:block;
+  margin:0 auto;
+}
+
+/* ==========================================================
    11. RESPONSIVE — TABLET Y MÓVIL
 ========================================================== */
 @media (max-width: 900px){
@@ -674,7 +765,6 @@ footer{
       Construimos mundos, historias y experiencias. Un estudio pensado como un
       cubo: cada cara, un proyecto distinto.
     </p>
-    <p class="hero-coords">SECTOR 04 · COORD 21.7N / 88.3W · EST. 2024</p>
   </section>
 
   <!-- ============================================================
@@ -842,8 +932,13 @@ footer{
   </div>
 </footer>
 
+<!-- Lightbox de galería: se llena por JS al hacer clic en una foto -->
+<div class="lightbox" id="lightbox" aria-hidden="true">
+  <div class="lightbox-inner" id="lightboxInner"></div>
+</div>
+
 <!-- ============================================================
-     JS mínimo: solo controla el menú móvil (hamburguesa)
+     JS: menú móvil (hamburguesa) + animaciones al hacer clic
 ============================================================ -->
 <script>
   const navToggle = document.getElementById('navToggle');
@@ -858,6 +953,56 @@ footer{
       navLinks.classList.remove('open');
       navToggle.setAttribute('aria-expanded', 'false');
     });
+  });
+
+  // ==========================================================
+  // EFECTO RIPPLE: onda de color al hacer clic en cualquier
+  // tarjeta, botón o enlace del sitio.
+  // ==========================================================
+  const rippleSelectors = '.cell, .social-link, .nav-cta, .event-row, .gallery-item, a.logo';
+
+  document.querySelectorAll(rippleSelectors).forEach(el => {
+    el.addEventListener('click', function (e) {
+      const rect = this.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height) * 1.6;
+      const ripple = document.createElement('span');
+      ripple.className = 'click-ripple';
+      ripple.style.width = ripple.style.height = size + 'px';
+      ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+      ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+      this.appendChild(ripple);
+      ripple.addEventListener('animationend', () => ripple.remove());
+    });
+  });
+
+  // ==========================================================
+  // LIGHTBOX: al hacer clic en una foto de la galería, se abre
+  // en grande con una animación de aparición.
+  // ==========================================================
+  const lightbox = document.getElementById('lightbox');
+  const lightboxInner = document.getElementById('lightboxInner');
+
+  document.querySelectorAll('.gallery-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const img = item.querySelector('img');
+      lightboxInner.innerHTML = img
+        ? `<img src="${img.src}" alt="${img.alt || ''}">`
+        : `<p>${item.textContent.trim()}</p>`;
+      lightbox.classList.add('open');
+      lightbox.setAttribute('aria-hidden', 'false');
+    });
+  });
+
+  lightbox.addEventListener('click', () => {
+    lightbox.classList.remove('open');
+    lightbox.setAttribute('aria-hidden', 'true');
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      lightbox.classList.remove('open');
+      lightbox.setAttribute('aria-hidden', 'true');
+    }
   });
 </script>
 

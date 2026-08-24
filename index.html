@@ -344,7 +344,7 @@ header.site-header{
 ========================================================== */
 .trailer-cell{
   position:relative;
-  aspect-ratio:16/7.2;
+  aspect-ratio:16/6.2;
   padding:0;
   display:flex; align-items:center; justify-content:center;
   background:
@@ -385,14 +385,14 @@ header.site-header{
 
 /* El cubo recorre libremente todo el recuadro del tráiler, rebotando de punto en punto */
 @keyframes cube-roam{
-  0%   { left:8%;  top:14%; }
-  14%  { left:80%; top:10%; }
-  28%  { left:86%; top:62%; }
-  42%  { left:52%; top:76%; }
-  56%  { left:8%;  top:68%; }
-  70%  { left:20%; top:26%; }
-  84%  { left:64%; top:40%; }
-  100% { left:8%;  top:14%; }
+  0%   { left:10%; top:16%; }
+  14%  { left:72%; top:12%; }
+  28%  { left:80%; top:58%; }
+  42%  { left:48%; top:70%; }
+  56%  { left:10%; top:62%; }
+  70%  { left:22%; top:30%; }
+  84%  { left:58%; top:42%; }
+  100% { left:10%; top:16%; }
 }
 @media (prefers-reduced-motion: reduce){
   .trailer-cube.logo-spin-wrap{ animation:none; }
@@ -715,6 +715,17 @@ footer{
   color:var(--text-faint);
 }
 
+/* Cabecita pixel-art estilo Minecraft junto al crédito */
+.credit-name{
+  display:inline-flex; align-items:center; gap:6px;
+}
+.mc-head{
+  width:15px; height:15px;
+  image-rendering:pixelated;
+  flex-shrink:0;
+  filter:drop-shadow(0 0 3px rgba(0,0,0,.6));
+}
+
 /* ==========================================================
    10b. ANIMACIONES AL HACER CLIC (ripple + presión táctil)
 ========================================================== */
@@ -991,7 +1002,7 @@ a.logo{
         </svg>
 
         <!-- Cubo del logo, rebotando libremente por todo el recuadro -->
-        <div class="trailer-cube logo-spin-wrap" style="--size:110px;" aria-hidden="true">
+        <div class="trailer-cube logo-spin-wrap" style="--size:190px;" aria-hidden="true">
           <img class="logo-spin" src="logo-astrocube.png" alt="" style="--spin-speed:12s;">
         </div>
 
@@ -1145,7 +1156,29 @@ a.logo{
 
     <div class="foot-bottom">
       <span>© 2026 AstroCube. Todos los derechos reservados.</span>
-      <span>Sitio creado por Johann · Discord: johann.sra</span>
+      <span class="credit-name">
+        <svg class="mc-head" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="2" y="0" width="12" height="2" fill="#3b2712"/>
+          <rect x="0" y="2" width="16" height="2" fill="#3b2712"/>
+          <rect x="0" y="4" width="2" height="2" fill="#3b2712"/>
+          <rect x="2" y="4" width="12" height="2" fill="#d9a066"/>
+          <rect x="14" y="4" width="2" height="2" fill="#3b2712"/>
+          <rect x="0" y="6" width="4" height="2" fill="#d9a066"/>
+          <rect x="4" y="6" width="2" height="2" fill="#ffffff"/>
+          <rect x="6" y="6" width="2" height="2" fill="#1a1a1a"/>
+          <rect x="8" y="6" width="2" height="2" fill="#d9a066"/>
+          <rect x="10" y="6" width="2" height="2" fill="#ffffff"/>
+          <rect x="12" y="6" width="2" height="2" fill="#1a1a1a"/>
+          <rect x="14" y="6" width="2" height="2" fill="#d9a066"/>
+          <rect x="0" y="8" width="16" height="2" fill="#d9a066"/>
+          <rect x="0" y="10" width="4" height="2" fill="#d9a066"/>
+          <rect x="4" y="10" width="8" height="2" fill="#7a4b2e"/>
+          <rect x="12" y="10" width="4" height="2" fill="#d9a066"/>
+          <rect x="2" y="12" width="12" height="2" fill="#d9a066"/>
+          <rect x="4" y="14" width="8" height="2" fill="#d9a066"/>
+        </svg>
+        Sitio creado por Johann · Discord: johann.sra
+      </span>
       <span>SECTOR 04 · UNIVERSO ASTROCUBE</span>
     </div>
   </div>
@@ -1195,10 +1228,29 @@ a.logo{
     osc.stop(ctx.currentTime + duration);
   }
 
-  // Sonido de "pico" (dos golpes rápidos), para clics generales
+  // Sonidos de clic: varios patrones distintos tipo 8-bit, elegidos
+  // al azar en cada clic para que no se sienta repetitivo.
+  const clickSounds = [
+    // Pico doble clásico (grave)
+    () => { playBlip(180, 0.05, 'square', 0.06); setTimeout(() => playBlip(120, 0.06, 'square', 0.05), 40); },
+    // Ping ascendente
+    () => { playBlip(300, 0.045, 'square', 0.05); setTimeout(() => playBlip(460, 0.06, 'square', 0.05), 45); },
+    // Ping descendente
+    () => { playBlip(520, 0.05, 'triangle', 0.055); setTimeout(() => playBlip(340, 0.06, 'triangle', 0.045), 45); },
+    // Golpe corto tipo "bloque colocado"
+    () => { playBlip(150, 0.07, 'sawtooth', 0.045); },
+    // Triple picoteo rápido
+    () => { playBlip(500, 0.03, 'square', 0.04); setTimeout(() => playBlip(600, 0.03, 'square', 0.04), 35); setTimeout(() => playBlip(700, 0.04, 'square', 0.04), 70); },
+    // "Bip" agudo tipo confirmación
+    () => { playBlip(660, 0.05, 'square', 0.05); setTimeout(() => playBlip(880, 0.05, 'square', 0.04), 50); },
+    // Onda suave tipo "pop"
+    () => { playBlip(240, 0.09, 'triangle', 0.06); },
+    // Doble grave-agudo tipo "click de menú"
+    () => { playBlip(220, 0.04, 'square', 0.05); setTimeout(() => playBlip(550, 0.05, 'square', 0.045), 60); },
+  ];
   function playClickSound(){
-    playBlip(180, 0.05, 'square', 0.06);
-    setTimeout(() => playBlip(120, 0.06, 'square', 0.05), 40);
+    const sound = clickSounds[Math.floor(Math.random() * clickSounds.length)];
+    sound();
   }
 
   const soundToggle = document.getElementById('soundToggle');

@@ -201,6 +201,22 @@ header.site-header{
 }
 .nav-cta:hover{ border-color:var(--cyan); background:var(--surface); box-shadow:var(--glow-cyan); }
 
+/* Botón de sonido on/off */
+.sound-toggle{
+  display:flex; align-items:center; justify-content:center;
+  width:38px; height:38px;
+  margin-left:14px;
+  background:none;
+  border:1px solid var(--border-hover);
+  border-radius:100px;
+  color:var(--text-dim);
+  font-size:15px;
+  cursor:pointer;
+  transition:border-color .2s, color .2s, box-shadow .2s;
+}
+.sound-toggle:hover{ border-color:var(--cyan); color:var(--text); }
+.sound-toggle.on{ border-color:var(--lime); color:var(--lime); box-shadow:var(--glow-lime); }
+
 /* Botón hamburguesa (solo visible en móvil) */
 .nav-toggle{
   display:none;
@@ -228,11 +244,35 @@ header.site-header{
   line-height:0.98;
 }
 .hero-title .grad{
+  filter:drop-shadow(0 0 18px rgba(0,240,255,.35)) drop-shadow(0 0 30px rgba(192,77,255,.25));
+}
+.hero-title .grad,
+.hero-title .grad .letter{
   background:var(--gradient);
   -webkit-background-clip:text;
   background-clip:text;
   color:transparent;
-  filter:drop-shadow(0 0 18px rgba(0,240,255,.35)) drop-shadow(0 0 30px rgba(192,77,255,.25));
+}
+
+/* ==========================================================
+   Título con letras "tambaleantes" (efecto bloque inestable)
+========================================================== */
+.hero-title .letter{
+  display:inline-block;
+  transform-origin:50% 100%;
+  animation:letter-wobble 2.6s ease-in-out infinite;
+  cursor:default;
+}
+.hero-title .letter:hover{ animation-play-state:paused; transform:translateY(-6px) rotate(0deg) scale(1.08); }
+@keyframes letter-wobble{
+  0%,100%{ transform:translateY(0) rotate(0deg); }
+  20%{ transform:translateY(-5px) rotate(-4deg); }
+  40%{ transform:translateY(2px) rotate(3deg); }
+  60%{ transform:translateY(-3px) rotate(-2deg); }
+  80%{ transform:translateY(2px) rotate(2deg); }
+}
+@media (prefers-reduced-motion: reduce){
+  .hero-title .letter{ animation:none; }
 }
 
 /* Bloques flotantes decorativos, look "bloque de Minecraft" en neón */
@@ -333,15 +373,29 @@ header.site-header{
   padding:20px;
 }
 .trailer-cube.logo-spin-wrap{
-  margin:0 auto 22px;
+  position:absolute;
+  z-index:1;
+  left:8%; top:14%;
+  animation:cube-roam 24s ease-in-out infinite;
+  pointer-events:none;
 }
 .trailer-cube .logo-spin{
-  animation:spin3d 12s linear infinite, floaty 5s ease-in-out infinite;
+  animation:spin3d 12s linear infinite;
 }
 
-@keyframes floaty{
-  0%,100%{ translate:0 0; }
-  50%{ translate:0 -8px; }
+/* El cubo recorre libremente todo el recuadro del tráiler, rebotando de punto en punto */
+@keyframes cube-roam{
+  0%   { left:8%;  top:14%; }
+  14%  { left:80%; top:10%; }
+  28%  { left:86%; top:62%; }
+  42%  { left:52%; top:76%; }
+  56%  { left:8%;  top:68%; }
+  70%  { left:20%; top:26%; }
+  84%  { left:64%; top:40%; }
+  100% { left:8%;  top:14%; }
+}
+@media (prefers-reduced-motion: reduce){
+  .trailer-cube.logo-spin-wrap{ animation:none; }
 }
 
 /* Pulso de luz tipo "escaneo", da sensación de video cargando/en producción */
@@ -803,6 +857,7 @@ a.logo{
   .nav-links.open{ display:flex; }
   .nav-links a{ padding:14px 0; border-bottom:1px solid var(--border); }
   .nav-cta{ display:none; }
+  .sound-toggle{ margin-left:auto; margin-right:8px; }
   .nav-toggle{ display:flex; align-items:center; justify-content:center; }
 
   .hero{ padding:56px 0 24px; }
@@ -848,6 +903,9 @@ a.logo{
     </nav>
 
     <a href="https://discord.gg/JDZWcubXuW" class="nav-cta" target="_blank" rel="noopener">Únete al Discord →</a>
+
+    <!-- Botón de sonido: activa/desactiva los efectos de audio del sitio -->
+    <button class="sound-toggle" id="soundToggle" aria-label="Activar sonido" aria-pressed="false" title="Activar sonido">🔇</button>
 
     <!-- Botón de menú móvil -->
     <button class="nav-toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false">☰</button>
@@ -932,10 +990,12 @@ a.logo{
           <rect class="dust" x="86" y="36" width="3" height="3" fill="#bfae8f"/>
         </svg>
 
+        <!-- Cubo del logo, rebotando libremente por todo el recuadro -->
+        <div class="trailer-cube logo-spin-wrap" style="--size:110px;" aria-hidden="true">
+          <img class="logo-spin" src="logo-astrocube.png" alt="" style="--spin-speed:12s;">
+        </div>
+
         <div class="trailer-content">
-          <div class="trailer-cube logo-spin-wrap" style="--size:110px;" aria-hidden="true">
-            <img class="logo-spin" src="logo-astrocube.png" alt="" style="--spin-speed:12s;">
-          </div>
           <p class="big">Próximamente: Descubre el universo AstroCube</p>
           <p class="small">Tráiler oficial en producción</p>
         </div>
@@ -1106,6 +1166,89 @@ a.logo{
      JS: menú móvil (hamburguesa) + animaciones al hacer clic
 ============================================================ -->
 <script>
+  // ==========================================================
+  // SONIDO: sintetizado con Web Audio (sin archivos externos),
+  // estilo "8-bit". Se activa/desactiva con el botón de la nav.
+  // Los navegadores bloquean audio sin gesto del usuario, por
+  // eso el AudioContext se crea/reanuda recién al activar.
+  // ==========================================================
+  let audioCtx = null;
+  let soundOn = false;
+
+  function ensureAudio(){
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+
+  function playBlip(freq, duration = 0.09, type = 'square', volume = 0.05){
+    if (!soundOn) return;
+    const ctx = ensureAudio();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gain.gain.setValueAtTime(volume, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + duration);
+  }
+
+  // Sonido de "pico" (dos golpes rápidos), para clics generales
+  function playClickSound(){
+    playBlip(180, 0.05, 'square', 0.06);
+    setTimeout(() => playBlip(120, 0.06, 'square', 0.05), 40);
+  }
+
+  const soundToggle = document.getElementById('soundToggle');
+  soundToggle.addEventListener('click', () => {
+    soundOn = !soundOn;
+    if (soundOn) ensureAudio();
+    soundToggle.classList.toggle('on', soundOn);
+    soundToggle.textContent = soundOn ? '🔊' : '🔇';
+    soundToggle.setAttribute('aria-pressed', soundOn);
+    soundToggle.setAttribute('title', soundOn ? 'Desactivar sonido' : 'Activar sonido');
+    if (soundOn) playBlip(440, 0.08, 'square', 0.06);
+  });
+
+  // ==========================================================
+  // TÍTULO TAMBALEANTE: separa "ASTROCUBE" en letras individuales
+  // (conservando el degradado de "CUBE") y les da una pequeña
+  // melodía al pasar el mouse por encima.
+  // ==========================================================
+  const heroTitle = document.querySelector('.hero-title');
+  const notes = [261, 294, 330, 349, 392, 440, 494, 523, 587]; // escala tipo 8-bit
+
+  function wrapLetters(node, counter){
+    Array.from(node.childNodes).forEach(child => {
+      if (child.nodeType === Node.TEXT_NODE){
+        const frag = document.createDocumentFragment();
+        child.textContent.split('').forEach(ch => {
+          const span = document.createElement('span');
+          span.className = 'letter';
+          span.textContent = ch;
+          span.style.animationDelay = (counter.i * 0.08) + 's';
+          span.dataset.freq = notes[counter.i % notes.length];
+          counter.i++;
+          frag.appendChild(span);
+        });
+        child.replaceWith(frag);
+      } else if (child.nodeType === Node.ELEMENT_NODE){
+        wrapLetters(child, counter);
+      }
+    });
+  }
+
+  if (heroTitle){
+    wrapLetters(heroTitle, { i: 0 });
+    heroTitle.querySelectorAll('.letter').forEach(letter => {
+      letter.addEventListener('mouseenter', () => {
+        playBlip(Number(letter.dataset.freq), 0.12, 'square', 0.05);
+      });
+    });
+  }
+
   const navToggle = document.getElementById('navToggle');
   const navLinks = document.getElementById('navLinks');
   navToggle.addEventListener('click', () => {
@@ -1128,6 +1271,7 @@ a.logo{
 
   document.querySelectorAll(rippleSelectors).forEach(el => {
     el.addEventListener('click', function (e) {
+      playClickSound();
       const rect = this.getBoundingClientRect();
       const size = Math.max(rect.width, rect.height) * 1.6;
       const ripple = document.createElement('span');
@@ -1182,6 +1326,7 @@ a.logo{
   document.querySelectorAll('.social-link.soon').forEach(link => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
+      playBlip(220, 0.15, 'sawtooth', 0.05);
       const network = link.dataset.network || 'Esta red';
       toastText.textContent = `${network} — próximamente`;
       toast.classList.add('show');

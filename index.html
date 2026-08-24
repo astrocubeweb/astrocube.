@@ -259,6 +259,40 @@ header.site-header{
   color:var(--text-dim);
   font-size:16px;
 }
+.hero-actions{
+  display:flex;
+  gap:14px;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-top:30px;
+}
+.hero-cta{
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:15px;
+  padding:14px 26px;
+  border-radius:100px;
+  background:var(--gradient);
+  color:#05060a;
+  box-shadow:0 0 20px rgba(0,240,255,.25), 0 0 34px rgba(192,77,255,.18);
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.hero-cta:hover{ transform:translateY(-2px); box-shadow:0 0 24px rgba(0,240,255,.4), 0 0 44px rgba(192,77,255,.3); }
+.hero-cta:active{ transform:translateY(0) scale(.97); }
+.hero-cta-ghost{
+  display:inline-flex; align-items:center;
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:15px;
+  padding:14px 24px;
+  border-radius:100px;
+  border:1px solid var(--border-hover);
+  color:var(--text);
+  transition:border-color .2s ease, background .2s ease;
+}
+.hero-cta-ghost:hover{ border-color:var(--cyan); background:var(--surface); }
+
 .hero-coords{
   font-family:var(--font-mono);
   font-size:12px;
@@ -676,6 +710,31 @@ a.logo{
 }
 
 /* ==========================================================
+   10d. TOAST "PRÓXIMAMENTE" (redes aún no disponibles)
+========================================================== */
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:28px;
+  transform:translate(-50%, 20px);
+  z-index:1100;
+  display:flex; align-items:center; gap:10px;
+  padding:13px 20px;
+  background:var(--surface-2);
+  border:1px solid var(--border-hover);
+  border-radius:100px;
+  font-family:var(--font-mono);
+  font-size:12.5px;
+  color:var(--text);
+  box-shadow:var(--glow-violet);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s ease, transform .25s ease;
+}
+.toast.show{ opacity:1; transform:translate(-50%, 0); }
+.toast .social-dot{ background:var(--gradient); }
+
+/* ==========================================================
    11. RESPONSIVE — TABLET Y MÓVIL
 ========================================================== */
 @media (max-width: 900px){
@@ -745,7 +804,7 @@ a.logo{
       <a href="#comunidad">Comunidad</a>
     </nav>
 
-    <a href="#comunidad" class="nav-cta">Únete al Discord →</a>
+    <a href="https://discord.gg/JDZWcubXuW" class="nav-cta" target="_blank" rel="noopener">Únete al Discord →</a>
 
     <!-- Botón de menú móvil -->
     <button class="nav-toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false">☰</button>
@@ -765,6 +824,10 @@ a.logo{
       Construimos mundos, historias y experiencias. Un estudio pensado como un
       cubo: cada cara, un proyecto distinto.
     </p>
+    <div class="hero-actions">
+      <a href="https://discord.gg/JDZWcubXuW" class="hero-cta" target="_blank" rel="noopener">Únete a la comunidad →</a>
+      <a href="#trailer" class="hero-cta-ghost">Ver más</a>
+    </div>
   </section>
 
   <!-- ============================================================
@@ -916,11 +979,11 @@ a.logo{
 
         <!-- Enlaces de redes: reemplaza los href="#" por tus URLs reales -->
         <div class="social-links">
-          <a href="#" class="social-link discord"><span class="social-dot"></span>Discord</a>
-          <a href="#" class="social-link"><span class="social-dot"></span>Instagram</a>
-          <a href="#" class="social-link"><span class="social-dot"></span>TikTok</a>
-          <a href="#" class="social-link"><span class="social-dot"></span>YouTube</a>
-          <a href="#" class="social-link"><span class="social-dot"></span>X / Twitter</a>
+          <a href="https://discord.gg/JDZWcubXuW" class="social-link discord" target="_blank" rel="noopener"><span class="social-dot"></span>Discord</a>
+          <a href="#" class="social-link soon" data-network="Instagram"><span class="social-dot"></span>Instagram</a>
+          <a href="#" class="social-link soon" data-network="TikTok"><span class="social-dot"></span>TikTok</a>
+          <a href="#" class="social-link soon" data-network="YouTube"><span class="social-dot"></span>YouTube</a>
+          <a href="#" class="social-link soon" data-network="X / Twitter"><span class="social-dot"></span>X / Twitter</a>
         </div>
       </div>
     </div>
@@ -935,6 +998,12 @@ a.logo{
 <!-- Lightbox de galería: se llena por JS al hacer clic en una foto -->
 <div class="lightbox" id="lightbox" aria-hidden="true">
   <div class="lightbox-inner" id="lightboxInner"></div>
+</div>
+
+<!-- Aviso flotante para redes aún no disponibles -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span class="social-dot"></span>
+  <span id="toastText">Próximamente</span>
 </div>
 
 <!-- ============================================================
@@ -1003,6 +1072,26 @@ a.logo{
       lightbox.classList.remove('open');
       lightbox.setAttribute('aria-hidden', 'true');
     }
+  });
+
+  // ==========================================================
+  // REDES "PRÓXIMAMENTE": las redes que aún no tienen enlace
+  // real (marcadas con .soon) muestran un aviso en vez de
+  // navegar a un enlace vacío.
+  // ==========================================================
+  const toast = document.getElementById('toast');
+  const toastText = document.getElementById('toastText');
+  let toastTimer = null;
+
+  document.querySelectorAll('.social-link.soon').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const network = link.dataset.network || 'Esta red';
+      toastText.textContent = `${network} — próximamente`;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+    });
   });
 </script>
 
